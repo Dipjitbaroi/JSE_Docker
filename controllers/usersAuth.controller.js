@@ -108,8 +108,6 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-import bcrypt from "bcrypt";
-import { Users } from "../model/users.model.js";
 
 export const updatePassword = async (req, res) => {
   const { user_id, old_password, new_password } = req.body;
