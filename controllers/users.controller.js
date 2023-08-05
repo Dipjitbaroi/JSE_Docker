@@ -1,17 +1,18 @@
 import { projects } from "../model/projects.model.js";
 import {Users} from "../model/users.model.js";
+import { projectsJunction } from "../model/projectsJunction.model.js";
 
-projects.belongsToMany(Users, {
-  through: projectsJunction,
-  onDelete: "CASCADE",
-  foreignKey: 'project_id',
-  as: 'users'
-});
+// projects.belongsToMany(Users, {
+//   through: projectsJunction,
+//   onDelete: "CASCADE",
+//   foreignKey: 'project_id',
+//   as: 'users'
+// });
 Users.belongsToMany(projects, {
   through: projectsJunction,
   onDelete: "CASCADE",
   foreignKey: 'user_id',
-  projects:'projects'
+  projects:'userprojects'
 });
 
 export const getUsers = async (req, res) => {
@@ -62,7 +63,7 @@ export const getUsersById = async (req, res) => {
   try {
       const Datas = await Users.findOne({ 
         where: { user_id: user_id },
-        include:{model:projects,as:'projects'}
+        include:{model:projects,as:'userprojects'}
        });
 
       if (!Datas) {
