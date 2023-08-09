@@ -1,23 +1,42 @@
 import DataTypes from 'sequelize';
 import db from '../config/database.js';
 
-export const projectsJunction = db.define('projectsjunction', {
-  junction_id: {
+
+
+export const projectsClients = db.define('projectsclients', {
+  id: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
+    primaryKey:true,
+    unique:true,
+    allowNull:true,
+    autoIncrement:true,
   },
-  project_id: { // Foreign key for projects model
+  project_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: false
   },
-  user_id: { // Foreign key for Users model
+  user_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: false
+  },
+  name: {
+    type: DataTypes.INTEGER,
+  },
+  phone_no: {
+    type: DataTypes.CHAR,
+  },
+  email: {
+    type: DataTypes.CHAR,
+  },
+  company_name: {
+    type: DataTypes.CHAR
+  },
+  img: {
+    type: DataTypes.BLOB
   },
 }, {
   freezeTableName: true,
-  timestamps: false
+  timestamps : false
 });
 // Sync the models with the database using the 'alter' option
 db.sync({ alter: true,force:true })

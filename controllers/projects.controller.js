@@ -1,95 +1,8 @@
 import {projects} from "../model/projects.model.js";
 import { Users } from "../model/users.model.js";
 import { projectsJunction } from "../model/projectsJunction.model.js";
-// export const getProjects = async (req, res) => {
-  
-//     try {
-//       const Datas = await projects.findAll();
-//       const project_members = Datas.
-//       newDatas = {
-//         project_id:, 
-//         project_name:,
-//         project_client:{},
-//         project_leader:{},
-//         team:{
-//           project_leader:{},
-//           members:[{},{},{}]
-//         },
-//         started_at:,
-//         deadline:,
-//         status:,
-//         description:,
-//         img:,
-//         link:
-//       }
-//       return res.status(200).json({
-//         success: true,
-//         message: 'successfully',
-//         data: Datas,
-//       });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: 'Server Error' });
-//     }
-// // };
-// import { projects, Users } from '../models'; // Import your models here
-
-// // Define associations between projects and users
-// projects.belongsTo(Users, { foreignKey: 'project_leader_id', as: 'project_leader' });
-// projects.belongsToMany(Users, {
-//   through: 'project_members',
-//   foreignKey: 'project_id',
-//   otherKey: 'user_id',
-//   as: 'members',
-// });
-
-// export async function getAllProjects() {
-//   try {
-//     const allProjects = await projects.findAll({
-//       include: [
-//         { model: Users, as: 'project_leader', attributes: ['user_id', 'name', 'email'] },
-//         { model: Users, as: 'members', attributes: ['user_id', 'name', 'email'] },
-//       ],
-//       attributes: [
-//         'project_id',
-//         'project_name',
-//         'project_client_id',
-//         'project_leader_id',
-//         'project_memeber_ids',
-//         'started_at',
-//         'deadline',
-//         'status',
-//         'description',
-//         'img',
-//         'link',
-//       ],
-//     });
-
-//     // Map the projects data to the desired response structure
-//     const response = allProjects.map((project) => ({
-//       project_id: project.project_id,
-//       project_name: project.project_name,
-//       project_client: {}, // Add logic to fetch and populate client information here if needed
-//       project_leader: project.project_leader,
-//       team: {
-//         project_leader: project.project_leader,
-//         members: project.members,
-//       },
-//       started_at: project.started_at,
-//       deadline: project.deadline,
-//       status: project.status,
-//       description: project.description,
-//       img: project.img,
-//       link: project.link,
-//     }));
-
-//     return response;
-//   } catch (error) {
-//     throw new Error('Error while fetching all projects: ' + error.message);
-//   }
-// }
-// import { projects, Users } from '../models'; // Import your models here
-
+import { projectsTeams } from "../model/projectsTeam.model.js";
+import { projectsClients } from "../model/projectsCients.model.js";
 // Define associations between projects and users
 projects.belongsToMany(Users, {
   through: projectsJunction,
@@ -97,112 +10,22 @@ projects.belongsToMany(Users, {
   foreignKey: 'project_id',
   as: 'users'
 });
+projects.hasMany(projectsTeams,{
+  foreignKey:'project_id'
+});
+projects.hasMany(projectsClients,{
+  foreignKey:'project_id'
+});
+
 Users.belongsToMany(projects, {
   through: projectsJunction,
   onDelete: "CASCADE",
   foreignKey: 'user_id',
   projects:'projects'
 });
-// projects.belongsTo(Users, { foreignKey: 'client_id', as: 'project_client' });
-// projects.belongsTo(Users, { foreignKey: 'project_leader_id', as: 'project_leader' });
-// projects.belongsToMany(Users, {
-//   through: projectsJunction,
-//   foreignKey: 'assi_id',
-//   otherKey: 'user_id',
-//   as: 'members',
-// });
 
-// // export async function getAllProjects() 
-// export const getAllProjects = async (req, res) =>{
-//   try {
-//     const allProjects = await projects.findAll({
-//       include: [{model:all,include:[
-
-//         { model: Users, as: 'client', attributes: ['user_id', 'name', 'email'] },
-//         { model: Users, as: 'project_leader', attributes: ['user_id', 'name', 'email'] },
-//         { model: Users, as: 'assigned', attributes: ['user_id', 'name', 'email'] },
-//       ]}
-//       ],
-      // attributes: [
-      //   'project_id',
-      //   'project_name',
-      //   'project_client_id',
-      //   'project_leader_id',
-      //   'project_memeber_ids',
-      //   'started_at',
-      //   'deadline',
-      //   'status',
-      //   'description',
-      //   'img',
-      //   'link',
-      // ],
-//     });
-//     return res.status(200).json({
-//       success: true,
-//       message: 'Successfully fetched project data',
-//       data: allProjects,
-//     })
-//   } catch (error) {
-//     throw new Error('Error while fetching all projects: ' + error.message);
-//   }
-// };
-//     // Map the projects data to the desired response structure
-//     const response = allProjects.map((project) => ({
-//       project_id: project.project_id,
-//       project_name: project.project_name,
-//       project_client: project.project_client,
-//       project_leader: project.project_leader,
-//       team: {
-//         project_leader: project.project_leader,
-//         members: project.members,
-//       },
-//       started_at: project.started_at,
-//       deadline: project.deadline,
-//       status: project.status,
-//       description: project.description,
-//       img: project.img,
-//       link: project.link,
-//     }));
-
-//     return response;
-//   } catch (error) {
-//     throw new Error('Error while fetching all projects: ' + error.message);
-//   }
-// }
-// Define Associations between projects and users
-// Users.belongsToMany(projects,{
-//   through: projectsJunction,
-//   foreignKey: 'user_sl_no'
-// });
-// projects.belongsToMany(Users,{
-//   through: projectsJunction,
-//   foreignKey: 'project_sl_no'
-// });
-// export const getAllProjects1 = async (req, res) =>{
-//   try {
-//     const allProjects = await projects.findAll();
-
-//     return res.status(200).json({
-//       success: true,
-//       message: 'Successfully fetched project data',
-//       data: allProjects,
-//   })
-//   } catch (error) {
-//     throw new Error('Error while fetching all projects: ' + error.message);
-//   }
-// };
-// projects.belongsTo(Users, { foreignKey: 'user_sl_no', as: 'client' });
-// projects.belongsTo(Users, { foreignKey: 'user_sl_no', as: 'project_leader' });
-
-// projects.belongsToMany(Users, {
-//   through: projectsJunction,
-//   foreignKey: 'assigned',
-//   as: 'assigned',
-// });
-// Users.belongsToMany(projects,{
-//   foreignKey: 'assigned',
-//   as: 'user_sl_no'
-// });
+projectsTeams.belongsTo(projects);
+projectsClients.belongsTo(projects);
 
 export const getProjects = async (req, res) => {
   try {
@@ -288,38 +111,48 @@ export const getProjectsByUserId = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
-export const addProjects = async (req, res) => {
+export const addProject = async (req, res) => {
   // const { client_id } = req.params;
-  const { project_id, project_name,client_id,leader_id,member_ids,started_at,deadline,status,description, img, link } = req.body;
+  const { project_name,client,team_leader,team_members,started_at,deadline,status,description, img, link } = req.body;
 
   try {
     // Check if any required field is missing in the request body
     // if (!client_id) {
     //   return res.status(400).json({ message:"required params are missing"});
     // }
-    if (!project_id || !project_name || !client_id || !leader_id || !member_ids || !started_at  || !description || !status || !deadline) {
+    if ( !project_name || !started_at  || !description || !status || !deadline) {
       return res.status(400).json({ message: "Required fields are missing" });
     }
 
-    const client_info = await employees.findOne({ where: { id: client_id, type: 'client' } });
+    const project_client = await Users.findOne({ where: { user_id: client, type: 'client' } });
+    const project_leader = await Users.findOne({where:{ user_id: team_leader, type: 'employee'}});
+    const project_members = await Users.findAll({where:{ user_id: team_members, type:'employee'}})
 
-    if (!client_info) {
-      return res.status(404).json({ message: "Client doesn't exist" });
+    if (!project_client || !project_leader || !project_members) {
+      return res.status(404).json({ message: "users doesn't exist" });
     } else {
-      const newDatas = await projects.create({
-        project_id: project_id,
+      const newProject = await projects.create({
         project_name: project_name,
-        project_client: client_id,
-        project_leader:leader_id,
-        started_at:started_at,
+        started_at: started_at,
         deadline:deadline,
-        status:status,
+        status: status,
         description: description,
         img: img,
         link: link,
       });
+      console.log(newProject);
 
-      res.status(201).json({ newDatas });
+      const project_id = newProject.project_id;
+      console.log(project_id);
+
+      const addteam = newProject.addprojectsTeams(project_leader,project_client);
+      console.log(addteam);
+
+      const addclient = newProject.addprojectsClients(project_client);
+      console.log(addclient);
+
+
+      res.status(201).json({ newDatas,addteam,addclient });
     }
   } catch (error) {
     console.error(error);

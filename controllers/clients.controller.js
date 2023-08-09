@@ -74,7 +74,7 @@
 //           success: true,
 //           message: 'Successfully updated client data',
 //           data: updatedData,
-//       });
+//       }); 
 //   } catch (error) {
 //       console.error(error);
 //       res.status(500).json({ message: 'Server Error' });
