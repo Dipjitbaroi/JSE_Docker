@@ -4,7 +4,7 @@ const router = Router();
 
 
 router.get('/projects',getProjects);
-router.post('/projects/add',addProject);
+router.post('/projects/addproject',addProject);
 router.put('/projects/update',updateProjects);
 router.delete('/projects/delete',deleteProjects);
 export default router;

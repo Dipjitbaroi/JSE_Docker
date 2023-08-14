@@ -10,7 +10,6 @@ import { projectsJunction } from "../model/projectsJunction.model.js";
 // });
 Users.belongsToMany(projects, {
   through: projectsJunction,
-  onDelete: "CASCADE",
   foreignKey: 'user_id',
   projects:'userprojects'
 });
@@ -104,7 +103,7 @@ export const updateUser = async (req, res) => {
   const updatedData = req.body; // Contains the fields to be updated
 
   try {
-    const existingUser = await Users.findOne({ where: { user_id } });
+    const existingUser = await Users.findOne({ where: { user_id:user_id } });
 
     if (!existingUser) {
       return res.status(404).json({
@@ -118,7 +117,7 @@ export const updateUser = async (req, res) => {
     await existingUser.update(updatedData);
 
     // Fetch the updated record after the update operation
-    const updatedRecord = await Users.findOne({ where: { user_id } });
+    const updatedRecord = await Users.findOne({ where: { user_id:user_id } });
 
     res.status(200).json({
       success: true,
@@ -267,15 +266,15 @@ export const getAdminById = async (req, res) => {
       res.status(500).json({ message: 'Server Error' });
   }
 };
-export const addUsers = async (req, res) => {
-  const { user_id, name, designation, img } = req.body;
-  try {
-    const newDatas = await Users.create({ user_id: user_id, name: name, designation: designation, img: img });
-    res.status(201).json({
-      newDatas
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-};
+// export const addUsers = async (req, res) => {
+//   const { user_id, name, designation, img } = req.body;
+//   try {
+//     const newDatas = await Users.create({ user_id: user_id, name: name, designation: designation, img: img });
+//     res.status(201).json({
+//       newDatas
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// };

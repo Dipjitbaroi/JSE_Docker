@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import {Users} from "../model/users.model.js";
 
 export const signupUser = async (req, res) => {
-  const { user_id,name,password,department,designation,type,company_name } = req.body;
+  const { name,password,department,designation,phone_no,email,type,company_name } = req.body;
 
   try {
     // Hash the password
@@ -11,35 +11,39 @@ export const signupUser = async (req, res) => {
 
     // Create the user in the database
     if ( type === 'employee' ) {
-      if (!user_id||!name||!password||!department||!designation||!type) {
+      if (!name||!password||!department||!designation||!type) {
         res.status(500).json({error:'required field information not found'})
       }else{
         const user = await Users.create({
-          user_id: user_id,
           name: name,
           password: hashedPassword,
           department: department,
           designation: designation,
           type: type
         });
-        res.status(201).json({ message: type+' created successfully' });
+        res.status(201).json({ 
+          message: type+' created successfully',
+          data:user
+         });
 
       }
     
     }else if (type === 'client') {
-      if (!user_id||!name||!password||!department||!designation||!type||!company_name) {
+      if (!name||!password||!phone_no||!email||!type||!company_name) {
         res.status(500).json({error:'required field information not found'})
       }else{
         const user = await Users.create({
-          user_id: user_id,
           name: name,
           password: hashedPassword,
-          department: department,
-          designation: designation,
+          phone_no: phone_no,
+          email: email,
           type: type,
           company_name: company_name
         });
-        res.status(201).json({ message: 'client created successfully' });
+        res.status(201).json({ 
+          message: type+' created successfully',
+          data:user
+       });
 
       }
     }

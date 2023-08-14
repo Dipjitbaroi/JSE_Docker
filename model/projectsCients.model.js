@@ -39,7 +39,7 @@ export const projectsClients = db.define('projectsclients', {
   timestamps : false
 });
 // Sync the models with the database using the 'alter' option
-db.sync({ alter: true,force:true })
+db.sync({ alter: true })
   .then(() => {
     console.log('Database synchronized successfully with model definitions.');
   })

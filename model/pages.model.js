@@ -178,7 +178,7 @@ export const portfolio = db.define('portfolio', {
 // export (home);
 
 // export default home_container;
-db.sync({ alter: true,force:true })
+db.sync({ alter: true })
   .then(() => {
     console.log('Database synchronized successfully with model definitions.');
   })
