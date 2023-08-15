@@ -13,14 +13,13 @@ export const projectsClients = db.define('projectsclients', {
   },
   project_id: {
     type: DataTypes.INTEGER,
-    allowNull: false
   },
   user_id: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
   name: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.CHAR,
   },
   phone_no: {
     type: DataTypes.CHAR,

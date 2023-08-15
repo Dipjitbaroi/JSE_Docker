@@ -11,11 +11,15 @@ import { projectsClients } from "../model/projectsCients.model.js";
 // });
 projects.hasMany(projectsTeams, {
   foreignKey: "project_id",
-  as: "team",
+  as: "teams",
+  // onDelete: "CASCADE",
+  // onUpdate: "CASCADE"
 });
-projects.hasMany(projectsClients, {
+projects.hasOne(projectsClients, {
   foreignKey: "project_id",
-  as: "client",
+  as: "clients",
+  // onDelete: "CASCADE",
+  // onUpdate: "CASCADE"
 });
 
 // Users.belongsToMany(projects, {
@@ -24,8 +28,12 @@ projects.hasMany(projectsClients, {
 //   projects:'projects'
 // });
 
-projectsTeams.belongsTo(projects);
-projectsClients.belongsTo(projects);
+projectsTeams.belongsTo(projects,{
+  foreignKey: "project_id",
+});
+projectsClients.belongsTo(projects,{
+  foreignKey: "project_id",
+});
 
 export const getProjects = async (req, res) => {
   try {
@@ -33,12 +41,12 @@ export const getProjects = async (req, res) => {
       include: [
         {
           model: projectsClients,
-          as: "client",
+          as: "clients",
           attributes: ["user_id", "name", "email", "phone_no", "company_name"],
         },
         {
           model: projectsTeams,
-          as: "team",
+          as: "teams",
           attributes: ["user_id", "name", "email", "phone_no", "designation"],
         },
       ],
@@ -120,6 +128,104 @@ export const getProjectsByUserId = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+// export const addProject = async (req, res) => {
+//   const {
+//     project_name,
+//     project_code,
+//     client,
+//     team_leader,
+//     team_members,
+//     started_at,
+//     deadline,
+//     status,
+//     description,
+//     img,
+//     link,
+//   } = req.body;
+
+//   try {
+//     const project_client = await Users.findOne({
+//       where: { user_id: client, type: "client" },
+//     });
+//     const project_leader = await Users.findOne({
+//       where: { user_id: team_leader, type: "employee" },
+//     });
+//     const project_members = await Users.findAll({
+//       where: { user_id: team_members, type: "employee" },
+//     });
+//     const members_data = project_members.map((member) => {
+//       const plainMember = member.get({ plain: true });
+//       return plainMember;
+//     });
+//     console.log(members_data);
+//     if (!project_name || !started_at || !description || !status || !deadline) {
+//       return res.status(400).json({ message: "Required fields are missing" });
+//     }
+//     else if (!project_client || !project_leader || !project_members) {
+//       return res.status(404).json({ message: "users doesn't exist" });
+//     } else {
+//       const newProject = await projects.create({
+//         project_name: project_name,
+//         project_code: project_code,
+//         started_at: started_at,
+//         deadline: deadline,
+//         status: status,
+//         description: description,
+//         img: img,
+//         link: link,
+//       });
+//       const project_id = newProject.project_id;
+//       console.log(project_id);
+//       const Client = () => {
+//         const Project_client = project_client.dataValues;
+//         Project_client.project_id= project_id;
+//         return Project_client;
+//       };
+//       console.log(Client());
+//       const members = members_data.map((member) => {
+//         member.project_id =project_id ;
+//         member.role = "member";
+//         return member;
+//       });
+//       console.log(members);
+//       const leader = () => {
+//         // Assign properties to the existing project_leader object
+//         const Project_leader = project_leader.dataValues;
+//         Project_leader.project_id = project_id;
+//         Project_leader.role = "leader";
+//         return Project_leader;
+//       };
+//       // Call the leader function to update the project_leader object
+//       console.log(leader());
+//       // Output the updated project_leader object
+//       const fullTeam = [leader(),...members];
+//       console.log(fullTeam);
+//       const newClient = await projectsClients.create(Client());
+//       const newTeam = await projectsTeams.bulkCreate(fullTeam);
+
+//       res.status(201).json({ 
+//         message: "Successfuly added project",
+//         data:{
+//           "project_name":newProject.project_name,
+//           "project_code":newProject.project_code,
+//           "client":Client(),
+//           "team_leader":leader(),
+//           "team_members":members,
+//           "started_at":newProject.started_at,
+//           "deadline":newProject.deadline,
+//           "status":newProject.status,
+//           "description":newProject.description,
+//           "img":newProject.img,
+//           "link":newProject.link
+//       }
+//       });
+
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// };
 export const addProject = async (req, res) => {
   const {
     project_name,
@@ -139,126 +245,204 @@ export const addProject = async (req, res) => {
     const project_client = await Users.findOne({
       where: { user_id: client, type: "client" },
     });
+
     const project_leader = await Users.findOne({
       where: { user_id: team_leader, type: "employee" },
     });
-    // project_leader.dataValues.role = "leader";
+
     const project_members = await Users.findAll({
       where: { user_id: team_members, type: "employee" },
     });
-  
-    const members_data = project_members.map((member) => {
-      const plainMember = member.get({ plain: true });
-      // plainMember.role = "member";
-      return plainMember;
-    });
+
+    const members_data = project_members.map((member) => member.get({ plain: true }));
 
     if (!project_name || !started_at || !description || !status || !deadline) {
       return res.status(400).json({ message: "Required fields are missing" });
-    }
-
-    if (!project_client || !project_leader || !project_members) {
-      return res.status(404).json({ message: "users doesn't exist" });
+    } else if (!project_client || !project_leader || !project_members) {
+      return res.status(404).json({ message: "Users don't exist" });
     } else {
       const newProject = await projects.create({
-        project_name: project_name,
-        project_code: project_code,
-        started_at: started_at,
-        deadline: deadline,
-        status: status,
-        description: description,
-        img: img,
-        link: link,
+        project_name,
+        project_code,
+        started_at,
+        deadline,
+        status,
+        description,
+        img,
+        link,
       });
-      // console.log(newProject);
+
       const project_id = newProject.project_id;
+
       const Client = () => {
-        const Project_client = project_client.dataValues;
-        Project_client.project_id = project_id;
+        const Project_client = { ...project_client.dataValues, project_id };
+        return Project_client;
       };
 
-      const members = members_data.map((member) => {
-        // const plainMember = member.get({ plain: true });
-        member.project_id =project_id ;
-        member.role = "member";
-        return member;
+      const members = members_data.map((member) => ({
+        ...member,
+        project_id,
+        role: "member",
+      }));
+
+      const leader = () => ({
+        ...project_leader.dataValues,
+        project_id,
+        role: "leader",
       });
-      console.log(members)
-      const leader = () => {
-        // Assign properties to the existing project_leader object
-        const Project_leader = project_leader.dataValues;
-        Project_leader.project_id = project_id;
-        Project_leader.role = "leader";
-        return Project_leader;
-      };
-      // Call the leader function to update the project_leader object
-      console.log(leader());
-      // Output the updated project_leader object
-      console.log(project_leader);
-      const fullTeam = [leader(),...members];
-      console.log(fullTeam);
-      const newClient = await projectsClients.create(Client());
-      const newTeam = await projectsTeams.bulkCreate(fullTeam);
-      console.log(newTeam);
+
+      const fullTeam = [leader(), ...members];
+
+      await projectsClients.create(Client());
+      await projectsTeams.bulkCreate(fullTeam);
 
       res.status(201).json({ 
-        message: "Successfuly added project",
-        data:{
-          "project_name":newProject.project_name,
-          "project_code":newProject.project_code,
-          "client":Client(),
-          "team_leader":leader(),
-          "team_members":members,
-          "started_at":newProject.started_at,
-          "deadline":newProject.deadline,
-          "status":newProject.status,
-          "description":newProject.description,
-          "img":newProject.img,
-          "link":newProject.link
-      }
-          // newProject,
-          // newClient,
-          // newTeam ,
- 
+        message: "Successfully added project",
+        data: {
+          project_id: newProject.project_id,
+          project_name: newProject.project_name,
+          project_code: newProject.project_code,
+          client: Client(),
+          team_leader: leader(),
+          team_members: members,
+          started_at: newProject.started_at,
+          deadline: newProject.deadline,
+          status: newProject.status,
+          description: newProject.description,
+          img: newProject.img,
+          link: newProject.link
+        }
       });
-
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
   }
 };
-// export const addProjects = async (req, res) => {
 
-//   const { client_id } = req.params;
-//   const { project_id, name, description, img, link } = req.body;
+// export const updateProjects = async (req, res) => {
+//   const { 
+//     project_id,
+//     project_name,
+//     project_code,
+//     client,
+//     team_leader,
+//     team_members,
+//     started_at,
+//     deadline,
+//     status,
+//     description,
+//     img,
+//     link,} = req.body;
+//   try {
+//     let updatedClient;
+//     let updatedTeam;
+//     const existingData = await projects.findOne({
+//       where: { project_id: project_id },
+//     });
 
-//   const client_info = await employees.findOne({where: { id:client_id, type:'client'}})
-
-//   if (!client_info){
-//     console.error(error);
-//     res.status(500).json({ message: "Client doesn't exist" });
-//   }else{
-
-//     try {
-//       const newDatas = await projects.create({ project_id: project_id,client:client_info, name: name, description: description, img: img, link: link });
-//       res.status(201).json({
-//         newDatas
+//     if (!existingData) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Project not found",
+//         data: null,
 //       });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: 'Server Error' });
 //     }
+
+//     if (client) {
+//       // Find the project client
+//       const project_client = await Users.findOne({
+//         where: { user_id: client, type: 'client' },
+//       });
+//       console.log(project_client);
+//       const Client = () => {
+//         const Project_client = { ...project_client.dataValues, project_id };
+//         return Project_client;
+//       };
+//       console.log(Client());
+//       // Update the project's associated client
+//       updatedClient = await existingData.setClients([Client()]);
+//     }
+//     if (team) {
+//       const project_leader = await Users.findOne({
+//         where: { user_id: team_leader, type: "employee" },
+//       });
+  
+//       const project_members = await Users.findAll({
+//         where: { user_id: team_members, type: "employee" },
+//       });
+//       const members_data = project_members.map((member) => member.get({ plain: true }));
+
+//       const members = members_data.map((member) => ({
+//         ...member,
+//         project_id,
+//         role: "member",
+//       }));
+
+//       const leader = () => ({
+//         ...project_leader.dataValues,
+//         project_id,
+//         role: "leader",
+//       });
+
+//       const fullTeam = [leader(), ...members];
+//       updatedTeam = await existingData.setTeams(fullTeam);
+//     }
+//     const updatedData = await projects.update(
+//       { 
+//         project_name,
+//         project_code,
+//         started_at,
+//         deadline,
+//         status,
+//         description,
+//         img,
+//         link
+//       },
+//       { where: { project_id } }
+//     );
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Successfully updated project data",
+//       data: updatedData,updatedClient,updatedTeam
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server Error" });
 //   }
 // };
-// Update Projects
 export const updateProjects = async (req, res) => {
-  const { project_id, name, description, img, link } = req.body;
+  const {
+    project_id,
+    project_name,
+    project_code,
+    client,
+    team_leader,
+    team_members,
+    started_at,
+    deadline,
+    status,
+    description,
+    img,
+    link,
+  } = req.body;
+
   try {
     const existingData = await projects.findOne({
       where: { project_id: project_id },
+      include: [
+        {
+          model: projectsClients,
+          as: "clients",
+        },
+        {
+          model: projectsTeams,
+          as: "teams",
+        },
+      ],
     });
-
+    console.log(existingData);
     if (!existingData) {
       return res.status(404).json({
         success: false,
@@ -266,10 +450,60 @@ export const updateProjects = async (req, res) => {
         data: null,
       });
     }
-    const updatedData = await projects.update(
-      { name, description, img, link },
-      { where: { project_id } }
-    );
+
+    // Update main project details
+    const updatedData = await existingData.update({
+      project_name,
+      project_code,
+      started_at,
+      deadline,
+      status,
+      description,
+      img,
+      link,
+    });
+
+    // Update associated clients if provided
+    if (client) {
+      const project_client = await Client.findByPk(client);
+      // console.log(project_client);
+      console.log(project_id);
+      const Client = () => {
+        const Project_client = project_client;
+        Project_client.project_id= project_id;
+        return Project_client;
+      };
+      console.log(Client());
+      if (Client()) {
+        await existingData.setClients(Client());
+      }
+    }
+
+    // Update associated team members if provided
+    if (team_leader && team_members) {
+      const projectLeader = await Users.findOne({
+        where: { user_id: team_leader, type: "employee" },
+      });
+
+      const projectMembers = await Users.findAll({
+        where: { user_id: team_members, type: "employee" },
+      });
+      
+      const members = projectMembers.map((member) => ({
+        ...member.dataValues,
+        role: "member",
+        project_id:project_id,
+      }));
+
+      const leader = {
+        ...projectLeader.dataValues,
+        role: "leader",
+        project_id:project_id,
+      };
+
+      const fullTeam = [leader, ...members];
+      await existingData.setTeams(fullTeam);
+    }
 
     res.status(200).json({
       success: true,

@@ -19,15 +19,6 @@ export const projects = db.define('projects', {
     type: DataTypes.CHAR,
     allowNull: false
   },
-  client_id: {
-    type: DataTypes.INTEGER,
-  },
-  project_leader_id: {
-    type: DataTypes.INTEGER,
-  },
-  assigned_ids: {
-    type: DataTypes.INTEGER,
-  },
   started_at: {
     type: DataTypes.DATE,
 

@@ -20,7 +20,7 @@ export const projectsTeams = db.define('projectsteams', {
     allowNull: false
   },
   name: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.CHAR,
   },
   phone_no: {
     type: DataTypes.CHAR,
