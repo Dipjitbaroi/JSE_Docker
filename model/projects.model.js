@@ -47,10 +47,10 @@ export const projects = db.define('projects', {
   timestamps : false
 });
 // Sync the models with the database using the 'alter' option
-db.sync({ alter: true })
-  .then(() => {
-    console.log('Database synchronized successfully with model definitions.');
-  })
-  .catch((error) => {
-    console.error('Error synchronizing the database:', error);
-  });
+// db.sync({ alter: true,force: false })
+//   .then(() => {
+//     console.log('Database synchronized successfully with model definitions.');
+//   })
+//   .catch((error) => {
+//     console.error('Error synchronizing the database:', error);
+//   });

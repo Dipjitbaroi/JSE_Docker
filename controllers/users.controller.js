@@ -1,18 +1,7 @@
 import { projects } from "../model/projects.model.js";
 import {Users} from "../model/users.model.js";
-import { projectsJunction } from "../model/projectsJunction.model.js";
 
-// projects.belongsToMany(Users, {
-//   through: projectsJunction,
-//   onDelete: "CASCADE",
-//   foreignKey: 'project_id',
-//   as: 'users'
-// });
-Users.belongsToMany(projects, {
-  through: projectsJunction,
-  foreignKey: 'user_id',
-  projects:'userprojects'
-});
+
 
 export const getUsers = async (req, res) => {
     try {

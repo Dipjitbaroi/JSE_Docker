@@ -60,13 +60,11 @@ export const communicators = db.define('communicators', {
     
 });
 
-// Create the tables if they don't exist in the database
-// This is optional if you are managing table creation using migrations
-// You can remove this line if you are handling migrations separately
-db.sync({ alter: true })
-  .then(() => {
-    console.log('Database synchronized successfully with model definitions.');
-  })
-  .catch((error) => {
-    console.error('Error synchronizing the database:', error);
-  });
+
+// db.sync({ alter: true })
+//   .then(() => {
+//     console.log('Database synchronized successfully with model definitions.');
+//   })
+//   .catch((error) => {
+//     console.error('Error synchronizing the database:', error);
+//   });

@@ -178,10 +178,10 @@ export const portfolio = db.define('portfolio', {
 // export (home);
 
 // export default home_container;
-db.sync({ alter: true })
-  .then(() => {
-    console.log('Database synchronized successfully with model definitions.');
-  })
-  .catch((error) => {
-    console.error('Error synchronizing the database:', error);
-  });
+// db.sync({ alter: true })
+//   .then(() => {
+//     console.log('Database synchronized successfully with model definitions.');
+//   })
+//   .catch((error) => {
+//     console.error('Error synchronizing the database:', error);
+//   });

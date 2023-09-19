@@ -12,14 +12,14 @@ import { projectsClients } from "../model/projectsCients.model.js";
 projects.hasMany(projectsTeams, {
   foreignKey: "project_id",
   as: "teams",
-  // onDelete: "CASCADE",
-  // onUpdate: "CASCADE"
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE"
 });
 projects.hasOne(projectsClients, {
   foreignKey: "project_id",
-  as: "clients",
-  // onDelete: "CASCADE",
-  // onUpdate: "CASCADE"
+  as: "client",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE"
 });
 
 // Users.belongsToMany(projects, {
@@ -41,13 +41,13 @@ export const getProjects = async (req, res) => {
       include: [
         {
           model: projectsClients,
-          as: "clients",
+          as: "client",
           attributes: ["user_id", "name", "email", "phone_no", "company_name"],
         },
         {
           model: projectsTeams,
           as: "teams",
-          attributes: ["user_id", "name", "email", "phone_no", "designation"],
+          attributes: ["user_id", "name","role", "email", "phone_no", "designation"],
         },
       ],
     });
@@ -417,9 +417,9 @@ export const updateProjects = async (req, res) => {
     project_id,
     project_name,
     project_code,
-    client,
-    team_leader,
-    team_members,
+    // client,
+    // team_leader,
+    // team_members,
     started_at,
     deadline,
     status,
@@ -429,21 +429,9 @@ export const updateProjects = async (req, res) => {
   } = req.body;
 
   try {
-    const existingData = await projects.findOne({
-      where: { project_id: project_id },
-      include: [
-        {
-          model: projectsClients,
-          as: "clients",
-        },
-        {
-          model: projectsTeams,
-          as: "teams",
-        },
-      ],
-    });
-    console.log(existingData);
-    if (!existingData) {
+    const existingProject = await projects.findByPk(project_id);
+
+    if (!existingProject) {
       return res.status(404).json({
         success: false,
         message: "Project not found",
@@ -452,7 +440,8 @@ export const updateProjects = async (req, res) => {
     }
 
     // Update main project details
-    const updatedData = await existingData.update({
+    const updatedData = await existingProject.update({
+      project_id,
       project_name,
       project_code,
       started_at,
@@ -463,83 +452,330 @@ export const updateProjects = async (req, res) => {
       link,
     });
 
-    // Update associated clients if provided
-    if (client) {
-      const project_client = await Client.findByPk(client);
-      // console.log(project_client);
-      console.log(project_id);
-      const Client = () => {
-        const Project_client = project_client;
-        Project_client.project_id= project_id;
-        return Project_client;
-      };
-      console.log(Client());
-      if (Client()) {
-        await existingData.setClients(Client());
-      }
-    }
-
-    // Update associated team members if provided
-    if (team_leader && team_members) {
-      const projectLeader = await Users.findOne({
-        where: { user_id: team_leader, type: "employee" },
-      });
-
-      const projectMembers = await Users.findAll({
-        where: { user_id: team_members, type: "employee" },
-      });
+    
+    // // Update associated client if provided
+    // if (client) {
+    //   const newClient = await Users.findOne({
+    //     where: { user_id: client },
+    //     attributes: [
+    //       'user_id',
+    //       'name',
+    //       'phone_no',
+    //       'email',
+    //       'company_name',
+    //       'img'
+    //     ]
+    //   })
+    //   if (!newClient) {
+    //     return res.status(404).json({
+    //       success: false,
+    //       message: "new client not found",
+    //       data: null,
+    //     });
+    //   }
+    //   console.log(newClient);
+    //   const existingClient = await projectsClients.findOne({
+    //     where: { project_id: project_id }
+    //   });
+    //   console.log(existingClient);
+    //   if (!existingClient) {
+    //     return res.status(404).json({
+    //       success: false,
+    //       message: "Client not exist ",
+    //       data: null,
+    //     });
+    //   }
       
-      const members = projectMembers.map((member) => ({
-        ...member.dataValues,
-        role: "member",
-        project_id:project_id,
-      }));
+    //   const updatedClient = await existingClient.update({
+    //     'id':existingClient.id,
+    //     'project_id':existingClient.project_id,
+    //     'user_id':newClient.user_id,
+    //     'name':newClient.name,
+    //     'phone_no':newClient.phone_no,
+    //     'email':newClient.email,
+    //     'company_name':newClient.company_name,
+    //     'img':newClient.img
+    //   });
+      
+    //   // console.log(updatedClient);
+    //   if (!updatedClient) {
+    //     return res.status(404).json({
+    //       success: false,
+    //       message: " failed to update client ",
+    //       data: null,
+    //     });
+    //   }
+    //   // console.log(project_Client);
+    //   // project_Client = project_client;
+    //   // await project_Client.save();
+    // }
 
-      const leader = {
-        ...projectLeader.dataValues,
-        role: "leader",
-        project_id:project_id,
-      };
+    // // Update associated team members if provided
+    // if (team_leader && team_members) {
+    //   const newLeader = await Users.findOne({
+    //     where: { user_id: team_leader, type: "employee" },
+    //   });
 
-      const fullTeam = [leader, ...members];
-      await existingData.setTeams(fullTeam);
-    }
+    //   if (!newLeader) {
+    //     return res.status(404).json({
+    //       success: false,
+    //       message: " new leader not found",
+    //       data: null,
+    //     });
+    //   }
+    //   // const existingLeader = await projectsTeams.findOne({
+    //   //   where: { project_id: project_id, role: "leader" }
+    //   // });
+    //   // console.log(existingLeader);
+    //   // if (!existingLeader) {
+    //   //   return res.status(404).json({
+    //   //     success: false,
+    //   //     message: " leader not exist ",
+    //   //     data: null,
+    //   //   });
+    //   // }
+    //   // const updatedLeader = await existingLeader.update({
+    //   //   'id':existingLeader.id,         
+    //   //   'project_id':existingLeader.project_id,
+    //   //   'user_id':newLeader.user_id,    
+    //   //   'name':newLeader.name,
+    //   //   'phone_no':newLeader.phone_no,   
+    //   //   'email':newLeader.email,
+    //   //   'role':newLeader.role,       
+    //   //   'designation':newLeader.designation,
+    //   //   'department':newLeader.department, 
+    //   //   'img':newLeader.img
+    //   //   });
+    //   // console.log(updatedLeader);
+    //   const newMembers = await Users.findAll({
+    //     where: { user_id: team_members, type: "employee" },
+    //   });
+
+    //   if (!newMembers || newMembers.length !== team_members.length) {
+    //     return res.status(404).json({
+    //       success: false,
+    //       message: "One or more team members not found",
+    //       data: null,
+    //     });
+    //   }
+
+    //   const members = newMembers.map((member) => ({
+    //     ...member.dataValues,
+    //     role: "member",
+    //     project_id,
+    //   }));
+    //   // const existingMembers = await projectsTeams.findAll({
+    //   //   where:{ project_id: project_id, role: "member" }
+    //   // });
+    //   const leader = {
+    //     ...newLeader.dataValues,
+    //     role: "leader",
+    //     project_id,
+    //   };
+
+    //   const fullTeam = [leader, ...members];
+    //   console.log(fullTeam);
+    //   await existingProject.setTeams(fullTeam);
+    //   // const updatedMembers = await existingMembers.update(newMembers);
+    // }
 
     res.status(200).json({
       success: true,
       message: "Successfully updated project data",
-      data: updatedData,
+      data: {
+        updatedProject: updatedData,
+        // updatedClient: updatedClient,
+        // updatedLeader: updatedLeader,
+        // updatedMembers: up
+      },
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 // delete projects
 export const deleteProjects = async (req, res) => {
   const { project_id } = req.params; // Assuming the project_id is passed in the URL parameters
   try {
-    const existingData = await projects.findOne({
+    const existingProject = await projects.findOne({
       where: { project_id: project_id },
     });
 
-    if (!existingData) {
+    if (!existingProject) {
       return res.status(404).json({
         success: false,
         message: "Project not found",
         data: null,
       });
     }
-
-    await projects.destroy({ where: { project_id: project_id } });
-
+    const existingClient = await existingProject.getClient();
+    const existingTeam = await existingProject.getTeams();
+    console.log(existingTeam);
+    const deleteProject = await projects.destroy({ where: { project_id: project_id } });
+    if (existingClient) {
+      await existingClient.destroy();
+    }
+    if (existingTeam && existingTeam.length > 0) {
+      // Iterate through each team and delete
+      for (const teamInstance of existingTeam) {
+        await teamInstance.destroy();
+      }
+    }
+    // if (existingClient) {
+    //   await projectsClients.destroy({
+    //     where:{ id : existingClient.id }
+    //   })
+    // };
+    // if (existingTeam) {
+    //   await projectsTeams.destroy({
+    //     where:{ id : existingTeam }
+    //   })
+    // };
     return res.status(200).json({
       success: true,
       message: "Project data deleted successfully",
-      data: existingData,
+      data: deleteProject,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
+  }
+};
+export const updateTeam = async (req, res) => {
+  const { id, project_id, user_id, role } = req.body;
+
+  try {
+    const existingProject = await projects.findByPk(project_id);
+
+    if (!existingProject) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found',
+        data: null,
+      });
+    }
+
+    const existingTeamMember = await projectsTeams.findOne({
+      where:{ id:id }
+    });
+
+    if (!existingTeamMember) {
+      return res.status(404).json({
+        success: false,
+        message: 'Team member not found in the project',
+        data: null,
+      });
+    }
+    const newTeamMember = await Users.findOne({
+      where:{ user_id:user_id}
+    });
+    // Update the team member's data
+    const updatedTeamMember = await existingTeamMember.update({
+      id: id,
+      project_id:project_id,
+      user_id:user_id,
+      name:newTeamMember.name,
+      phone_no:newTeamMember.phone_no,
+      email:newTeamMember.email,
+      role:role,
+      designation:newTeamMember.description,
+      department:newTeamMember.department,
+      img:newTeamMember.img
+    });
+
+    if (!updatedTeamMember) {
+      return res.status(404).json({
+        success: false,
+        message: 'failed to update team member',
+        data: null,
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'Team member data updated successfully',
+      data: updatedTeamMember,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+export const addTeamMember = async (req, res) => {
+  const { project_id, user_id, role } = req.body;
+
+  try {
+    const existingProject = await projects.findByPk(project_id);
+
+    if (!existingProject) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found',
+        data: null,
+      });
+    }
+
+    const existingUser = await Users.findOne({
+      where: { user_id: user_id }
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+        data: null,
+      });
+    }
+
+    const newTeamMember = await projectsTeams.create({
+      project_id: project_id,
+      user_id: user_id,
+      name: existingUser.name,
+      phone_no: existingUser.phone_no,
+      email: existingUser.email,
+      role: role,
+      designation: existingUser.designation,
+      department: existingUser.department,
+      img: existingUser.img
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Team member added successfully',
+      data: newTeamMember,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+export const removeTeamMember = async (req, res) => {
+  const { id } = req.params; // Assuming the team member's ID is passed in the URL parameters
+
+  try {
+    const existingTeamMember = await projectsTeams.findOne({
+      where: { id: id }
+    });
+
+    if (!existingTeamMember) {
+      return res.status(404).json({
+        success: false,
+        message: 'Team member not found',
+        data: null,
+      });
+    }
+
+    // Delete the team member
+    await existingTeamMember.destroy();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Team member removed successfully',
+      data: null,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
   }
 };
